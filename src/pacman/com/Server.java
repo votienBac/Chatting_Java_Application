@@ -1,6 +1,7 @@
 package pacman.com;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.DataInputStream;
@@ -8,13 +9,17 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class Server extends JFrame implements ActionListener {
     JPanel p1;
     JTextField textField1;
     JButton jbtSend;
-    static JTextArea jtaMes;
+    static Box vertical = Box.createVerticalBox();
+    static JPanel panelTxt;
+    //static JTextArea jtaMes;
     static ServerSocket skt;
     static Socket socket;
     static DataInputStream dis;
@@ -84,14 +89,14 @@ public class Server extends JFrame implements ActionListener {
         l6.setBounds(260, 15, 30, 30);
         p1.add(l6);
 
-        jtaMes = new JTextArea();
-        jtaMes.setBackground(Color.PINK);
-        jtaMes.setBounds(5, 65,390, 480 );
-        jtaMes.setFont(new Font("SAN_SERIF", Font.PLAIN, 16));
-        jtaMes.setEditable(false);
-        jtaMes.setLineWrap(true);
-        jtaMes.setWrapStyleWord(true);
-        add(jtaMes);
+        panelTxt= new JPanel();
+        //panelTxt.setBackground(Color.PINK);
+        panelTxt.setBounds(5, 65,390, 480 );
+        panelTxt.setFont(new Font("SAN_SERIF", Font.PLAIN, 16));
+//        jtaMes.setEditable(false);
+//        jtaMes.setLineWrap(true);
+//        jtaMes.setWrapStyleWord(true);
+        add(panelTxt);
 
 
         textField1 = new JTextField();
@@ -142,7 +147,7 @@ public class Server extends JFrame implements ActionListener {
 
 
     public static void main(String[] args){
-        new Server().setVisible(true);.
+        new Server().setVisible(true);
         String msgInput = "";
         try{
             while(true){
@@ -153,7 +158,9 @@ public class Server extends JFrame implements ActionListener {
                 dos = new DataOutputStream(socket.getOutputStream());
                 while(true){
                     msgInput = dis.readUTF();
-                    jtaMes.setText(jtaMes.getText()+"\n"+msgInput);
+                    JPanel p2 =fomatLabel(msgInput);
+
+
                 }
 
 
@@ -172,7 +179,11 @@ public class Server extends JFrame implements ActionListener {
         try{
 
                 String out = textField1.getText();
-                jtaMes.setText(jtaMes.getText()+"\n\t\t\t"+out);
+                //jtaMes.setText(jtaMes.getText()+"\n\t\t\t"+out);
+                JPanel p2 =fomatLabel(out);
+                p2.setLayout(new BorderLayout());
+
+                panelTxt.add(p2);
                 dos.writeUTF(out);
                 textField1.setText("");
 
@@ -180,6 +191,26 @@ public class Server extends JFrame implements ActionListener {
         }catch (Exception ex){
             ex.printStackTrace();
         }
+    }
+
+    public static JPanel fomatLabel(String out) {
+        JPanel p3 = new JPanel();
+        p3.setLayout(new BoxLayout(p3, BoxLayout.Y_AXIS));// Arrange objects in panel vertically
+
+        JLabel l1 = new JLabel(out);
+        l1.setFont(new Font("Tahoma", Font.PLAIN, 16));
+        l1.setBackground(new Color(37, 211, 102));
+        l1.setOpaque(true);//set color background for JLabel
+        l1.setBorder(new EmptyBorder(15,15,15,50));//set a boder with default size
+        p3.add(l1);
+
+        Calendar cal = Calendar.getInstance(); // get time on timezone
+        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm");//format type show time
+
+        JLabel l2 = new JLabel() ;
+        l2.setText(sdf.format(cal.getTime()));
+        p3.add(l2);
+        return p3;
     }
 
 
