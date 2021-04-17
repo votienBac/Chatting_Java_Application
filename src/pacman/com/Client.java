@@ -1,16 +1,21 @@
 package pacman.com;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
 import java.net.Socket;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 
-public class Client extends JFrame implements ActionListener {
+public class Client  implements ActionListener {
     JPanel p1;
     JTextField textField1;
     JButton jbtSend;
-    static JTextArea jtaMes;
+    static JPanel panelTxt;
+    static JFrame frame = new JFrame();
+    static Box vertical = Box.createVerticalBox();
     static Socket socket;
     static DataInputStream dis;
     static DataOutputStream dos;
@@ -22,14 +27,14 @@ public class Client extends JFrame implements ActionListener {
         p1.setLayout(null);
         p1.setBackground(new Color(7, 94, 84));
         p1.setBounds(0, 0, 400, 60);
-        add(p1);
+        frame.add(p1);
 
 
 
         ImageIcon imageIcon = new ImageIcon("3.png");
         ImageIcon i3 = new ImageIcon(imageIcon.getImage().getScaledInstance(30, 30, Image.SCALE_DEFAULT));
         JLabel l1 = new JLabel(i3);
-        l1.setBounds(5, 20, 30, 30);
+        l1.setBounds(5, 20, 20, 20);
         p1.add(l1);
         l1.addMouseListener(new MouseAdapter() {
             @Override
@@ -80,20 +85,20 @@ public class Client extends JFrame implements ActionListener {
         l6.setBounds(260, 15, 30, 30);
         p1.add(l6);
 
-        jtaMes = new JTextArea();
-        jtaMes.setBackground(Color.PINK);
-        jtaMes.setBounds(5, 65,390, 480 );
-        jtaMes.setFont(new Font("SAN_SERIF", Font.PLAIN, 16));
-        jtaMes.setEditable(false);
-        jtaMes.setLineWrap(true);
+        panelTxt = new JPanel();
+        //panelTxt.setBackground(Color.PINK);
+        panelTxt.setBounds(5, 65,390, 480 );
+        panelTxt.setFont(new Font("SAN_SERIF", Font.PLAIN, 16));
+        //panelTxt.setEditable(false);
+        //.setLineWrap(true);
         //jtaMes.setWrapStyleWord(true);
-        add(jtaMes);
+        frame.add(panelTxt);
 
 
         textField1 = new JTextField();
         textField1.setBounds(10, 560, 310, 30);
         textField1.setFont(new Font("SAN_SERIF", Font.PLAIN, 16));
-        add(textField1);
+        frame.add(textField1);
 
         textField1.addKeyListener(new KeyAdapter() {
             @Override
@@ -121,30 +126,38 @@ public class Client extends JFrame implements ActionListener {
         jbtSend.setBounds(325, 560, 70, 30);
         jbtSend.setFont(new Font("SAN_SERIF", Font.PLAIN, 14));
         jbtSend.addActionListener(this);
-        add(jbtSend);
+        frame.add(jbtSend);
 
 
-        setDefaultCloseOperation(EXIT_ON_CLOSE);
-        setLayout(null);
-        setSize(400, 600);
-        setLocation(800, 200);
-        setUndecorated(true);
-        setVisible(true);
+        frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+        frame.setLayout(null);
+        frame.setSize(400, 600);
+        frame.setLocation(800, 200);
+        frame.setUndecorated(true);
+        frame.setVisible(true);
 
     }
 
     public static void main(String[] args) {
-        new Client().setVisible(true);
+        new Client().frame.setVisible(true);
         try{
             socket = new Socket("127.0.0.1", 1234);
             dis = new DataInputStream(socket.getInputStream());
             dos = new DataOutputStream(socket.getOutputStream());
             String msgInput ="";
             while(true){
-
+                panelTxt.setLayout(new BorderLayout());
                 msgInput = dis.readUTF();
 
-                jtaMes.setText(jtaMes.getText()+"\n"+msgInput);
+                //jtaMes.setText(jtaMes.getText()+"\n"+msgInput);
+                JPanel p2 = fomatLabel(msgInput);
+                JPanel left = new JPanel(new BorderLayout());
+                left.add(p2, BorderLayout.LINE_START);
+                vertical.add(left);
+                vertical.add(Box.createVerticalStrut(15));
+                panelTxt.add(vertical, BorderLayout.PAGE_START);
+                frame.validate();
+
 
 
             }
@@ -163,11 +176,37 @@ public class Client extends JFrame implements ActionListener {
         if(textField1.getText().isEmpty()) return;
         try{
             String out = textField1.getText();
-            jtaMes.setText(jtaMes.getText()+"\n\t\t\t"+out);
+            //jtaMes.setText(jtaMes.getText()+"\n\t\t\t"+out);
+            JPanel p2 = fomatLabel(out);
+            JPanel right = new JPanel(new BorderLayout());
+            right.add(p2, BorderLayout.LINE_END);
+            vertical.add(right);
+            vertical.add(Box.createVerticalStrut(15));
+            panelTxt.add(vertical, BorderLayout.PAGE_START);
+
             dos.writeUTF(out);
             textField1.setText("");
         }catch (Exception ex){
             ex.printStackTrace();
         }
+    }
+    public static JPanel fomatLabel(String out) {
+        JPanel p3 = new JPanel();
+        p3.setLayout(new BoxLayout(p3, BoxLayout.Y_AXIS));// sắp xếp bố cục theo chiều dọc
+
+        JLabel l1 = new JLabel("<html><p style = \"width : 150px\">"+out+"</p></html>"); // xuống dòng khi tin nhắn vượt quá chiều rộng
+        l1.setFont(new Font("Tahoma", Font.PLAIN, 16));
+        l1.setBackground(new Color(37, 211, 102));
+        l1.setOpaque(true);//set color background for JLabel
+        l1.setBorder(new EmptyBorder(15,15,15,50));//đặt một border với size mặc định
+        p3.add(l1);
+
+        Calendar cal = Calendar.getInstance(); // lấy thời gian từ timezone
+        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm");//kiểu hiển thị thời gian
+
+        JLabel l2 = new JLabel() ;
+        l2.setText(sdf.format(cal.getTime()));
+        p3.add(l2);
+        return p3;
     }
 }

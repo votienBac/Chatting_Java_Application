@@ -13,12 +13,14 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.concurrent.atomic.AtomicReference;
 
-public class Server extends JFrame implements ActionListener {
+public class Server  implements ActionListener {
     JPanel p1;
     JTextField textField1;
     JButton jbtSend;
     static Box vertical = Box.createVerticalBox();
     static JPanel panelTxt;
+    static JFrame frame = new JFrame();
+
     //static JTextArea jtaMes;
     static ServerSocket skt;
     static Socket socket;
@@ -32,7 +34,7 @@ public class Server extends JFrame implements ActionListener {
         p1.setLayout(null);
         p1.setBackground(new Color(7, 94, 84));
         p1.setBounds(0, 0, 400, 60);
-        add(p1);
+        frame.add(p1);
 
 
 
@@ -96,13 +98,13 @@ public class Server extends JFrame implements ActionListener {
 //        jtaMes.setEditable(false);
 //        jtaMes.setLineWrap(true);
 //        jtaMes.setWrapStyleWord(true);
-        add(panelTxt);
+        frame.add(panelTxt);
 
 
         textField1 = new JTextField();
         textField1.setBounds(10, 560, 310, 30);
         textField1.setFont(new Font("SAN_SERIF", Font.PLAIN, 16));
-        add(textField1);
+        frame.add(textField1);
         //mode typing
          textField1.addKeyListener(new KeyAdapter() {
             @Override
@@ -133,21 +135,21 @@ public class Server extends JFrame implements ActionListener {
 
 
 
-        add(jbtSend);
+        frame.add(jbtSend);
 
         //getContentPane().setBackground(Color.WHITE);
-        setDefaultCloseOperation(EXIT_ON_CLOSE);
-        setLayout(null);
-        setSize(400, 600);
-        setLocation(200, 200);
-        setUndecorated(true);
-        setVisible(true);
+        frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+        frame.setLayout(null);
+        frame.setSize(400, 600);
+        frame.setLocation(200, 200);
+        frame.setUndecorated(true);
+        frame.setVisible(true);
 
     }
 
 
     public static void main(String[] args){
-        new Server().setVisible(true);
+        new Server().frame.setVisible(true);
         String msgInput = "";
         try{
             while(true){
@@ -158,7 +160,15 @@ public class Server extends JFrame implements ActionListener {
                 dos = new DataOutputStream(socket.getOutputStream());
                 while(true){
                     msgInput = dis.readUTF();
+                    // tạo format cho tin nhắn đến
                     JPanel p2 =fomatLabel(msgInput);
+                    JPanel left = new JPanel(new BorderLayout());
+                    left.add(p2, BorderLayout.LINE_START);
+                    vertical.add(left);
+
+                    //panelTxt.add(vertical, BorderLayout.PAGE_START);
+                    frame.validate();
+
 
 
                 }
@@ -179,11 +189,19 @@ public class Server extends JFrame implements ActionListener {
         try{
 
                 String out = textField1.getText();
-                //jtaMes.setText(jtaMes.getText()+"\n\t\t\t"+out);
-                JPanel p2 =fomatLabel(out);
-                p2.setLayout(new BorderLayout());
 
-                panelTxt.add(p2);
+
+            //tạo format cho tin nhắn gửi đi
+                JPanel p2 =fomatLabel(out);
+                panelTxt.setLayout(new BorderLayout());
+                JPanel right = new JPanel(new BorderLayout());
+                right.add(p2, BorderLayout.LINE_END);
+                vertical.add(right);
+                vertical.add(Box.createVerticalStrut(15)); // tạo 1 khoảng trống có chiều dài 15 giữ 2 label chứa tin nhắn
+
+                panelTxt.add(vertical, BorderLayout.PAGE_START);
+
+
                 dos.writeUTF(out);
                 textField1.setText("");
 
@@ -195,17 +213,17 @@ public class Server extends JFrame implements ActionListener {
 
     public static JPanel fomatLabel(String out) {
         JPanel p3 = new JPanel();
-        p3.setLayout(new BoxLayout(p3, BoxLayout.Y_AXIS));// Arrange objects in panel vertically
+        p3.setLayout(new BoxLayout(p3, BoxLayout.Y_AXIS));// sắp xếp bố cục theo chiều dọc
 
-        JLabel l1 = new JLabel(out);
+        JLabel l1 = new JLabel("<html><p style = \"width : 150px\">"+out+"</p></html>"); // xuống dòng khi tin nhắn vượt quá chiều rộng
         l1.setFont(new Font("Tahoma", Font.PLAIN, 16));
         l1.setBackground(new Color(37, 211, 102));
         l1.setOpaque(true);//set color background for JLabel
-        l1.setBorder(new EmptyBorder(15,15,15,50));//set a boder with default size
+        l1.setBorder(new EmptyBorder(15,15,15,50));//đặt một border với size mặc định
         p3.add(l1);
 
-        Calendar cal = Calendar.getInstance(); // get time on timezone
-        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm");//format type show time
+        Calendar cal = Calendar.getInstance(); // lấy thời gian từ timezone
+        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm");//kiểu hiển thị thời gian
 
         JLabel l2 = new JLabel() ;
         l2.setText(sdf.format(cal.getTime()));
